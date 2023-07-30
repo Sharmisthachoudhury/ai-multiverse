@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 # from transformers import GPTNeoForCausalLM, GPT2Tokenizer, AutoModelForCausalLM, AutoTokenizer
 from dotenv import load_dotenv
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 app = Flask(__name__)
 CORS(app)
@@ -38,6 +39,21 @@ CORS(app)
 
 
 load_dotenv()
+
+# Load the GPT-2 model and tokenizer
+model_name = "gpt2"
+gpt2_model = GPT2LMHeadModel.from_pretrained(model_name)
+tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+# below method  code for GPT2 model.
+
+def generate_response_gpt2(prompt):
+    # Tokenize the input
+    input_ids = tokenizer.encode(prompt, return_tensors="pt")
+
+    # Generate a response using the GPT-2 model
+    output = gpt2_model.generate(input_ids, max_length=100, num_return_sequences=1,temperature=0.8)
+    answer = tokenizer.decode(output[0], skip_special_tokens=True)
+    return answer
 
 
 @app.route("/getres", methods=["POST"])
@@ -85,6 +101,11 @@ def call_api():
 
             # case "codegen-350M-mono":
             #     answer = codegen(prompt)
+
+       
+
+            case "gpt2":
+                answer = generate_response_gpt2(prompt)
 
         return jsonify({"answer": answer})
 
